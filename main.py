@@ -1,6 +1,9 @@
 import itertools
 from enum import Enum
+
 import matplotlib.pyplot as plt
+from db import *
+from sqlalchemy.orm import sessionmaker
 
 
 class BoundaryConfig(Enum):
@@ -138,9 +141,11 @@ if __name__ == "__main__":
 
     start_states = set()
     end_states = set()
-
+    Session = sessionmaker(bind=engine)
+    session = Session()
     for rule in range(2 ** ca.config.num_states):
         state_history = [ca.config.initial_config]
+        state_transitions = []
         ca.state = ca.config.initial_config
         for epoch in range(EPOCHS):
             # capture previous state
@@ -149,7 +154,12 @@ if __name__ == "__main__":
                 new_state[cell] = ca.interaction(cell, rule)
             ca.state = new_state
             state_history.append(ca.state)
+            state_transitions.append(StateTransition(epoch, rule, "".join(str(i) for i in ca.state)))
         print(state_history)
+        for state_transition in state_transitions:
+            session.add(state_transition)
+        session.commit()
         plt.imsave('img/{}.png'.format(rule), state_history)
+    session.close()
 
 
