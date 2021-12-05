@@ -159,7 +159,8 @@ if __name__ == "__main__":
         for state_transition in state_transitions:
             session.add(state_transition)
         session.commit()
-        plt.imsave('img/{}.png'.format(rule), state_history)
+        # If wanting to save JPEGS
+        # plt.imsave('img/{}.png'.format(rule), state_history)
     session.close()
 
 
