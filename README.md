@@ -16,8 +16,9 @@ def interaction(self, cell, rule) -> int:
     Interaction with a single cell in the automaton state
     :param cell: index of cell in state
     :param rule: bit-mapping rule to apply
-    """neighbors = self.get_neighbor_sites(cell)
-    if self.config.interaction == RuleOfInteraction.NEIGHBORHOOD_SET:
+    """
+    neighbors = self.get_neighbor_sites(cell)
+    if self.config.rule_of_interaction == RuleOfInteraction.NEIGHBORHOOD_SET:
         neighbors_tuple = tuple(neighbors)
         bit_offset = self.config.neighborhood_states.index(neighbors_tuple)
         bit = (rule >> bit_offset) & 1

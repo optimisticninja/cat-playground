@@ -52,7 +52,7 @@ class GatewayKey():
         # TODO: Accomodate higher dimensionality, see self.dimensionality
         self.total_cells = len(cells)
         self.initial_config = cells
-        self.boundary_config = BoundaryConfig.CYCLIC
+        self.boundary_config = BoundaryConfig.ZERO
         self.geometric_structure = GeometricStructure.ONE_D
         # TODO: Accomodate higher dimensionality
         self.dimensionality = 1
@@ -68,10 +68,8 @@ class CA:
         self.state[total_cells // 2] = 0
         # Snapshot initial config
         self.config = GatewayKey(self.state, neighborhood_sites)
-        self.history = []
 
     # TODO: Higher dimensionality
-    # TODO: Currently implemented as cyclic, zero boundary needs to be accommodated as well
     def get_neighbor_sites(self, cell: int) -> []:
         """
         Get neighborhood sites (neighbors + cell itself) with biasing for left hand side
@@ -83,34 +81,31 @@ class CA:
         lhs = cell - distance
         rhs = cell + distance
         neighborhood = []
-        if self.config.boundary_config == BoundaryConfig.CYCLIC:
-            if self.config.neighborhood_sites % 2:
-                if self.config.neighbohood_bias == NeighborhoodBias.LHS:
-                    lhs -= 1
-                else:
-                    rhs += 1
-                if lhs < 0:
-                    neighborhood += self.state[lhs:] + self.state[:rhs]
-                elif rhs > self.config.total_cells:
-                    rhs = -(self.config.total_cells - rhs)
-                    neighborhood += self.state[lhs:] + self.state[:rhs]
-                else:
-                    neighborhood += self.state[lhs:rhs]
+        if self.config.neighborhood_sites % 2:
+            if self.config.neighbohood_bias == NeighborhoodBias.LHS:
+                lhs -= 1
             else:
-                if lhs < 0:
-                    neighborhood += self.state[lhs:] + self.state[:rhs]
-                elif rhs > self.config.total_cells:
-                    rhs = -(self.config.total_cells - rhs)
-                    neighborhood += self.state[lhs:] + self.state[:rhs]
-                else:
-                    neighborhood += self.state[lhs:rhs]
-        else:
-            raise NotImplementedError
+                rhs += 1
+        if self.config.boundary_config == BoundaryConfig.CYCLIC:
+            if lhs < 0:
+                neighborhood += self.state[lhs:] + self.state[:rhs]
+            elif rhs > self.config.total_cells:
+                rhs = -(self.config.total_cells - rhs)
+                neighborhood += self.state[lhs:] + self.state[:rhs]
+            else:
+                neighborhood += self.state[lhs:rhs]
+        elif self.config.boundary_config == BoundaryConfig.ZERO:
+            if lhs < 0:
+                neighborhood += ([0] * abs(lhs)) + self.state[:rhs]
+            elif rhs > self.config.total_cells:
+                rhs = -(self.config.total_cells - rhs)
+                neighborhood += self.state[lhs:] + ([0] * rhs)
+            else:
+                neighborhood += self.state[lhs:rhs]
         print("Neighborhood:", neighborhood)
         return neighborhood
 
-    # TODO: Interaction should do a whole epoch set of n timesteps
-    def interaction(self, cell, rule) -> int:
+    def rule_of_interaction(self, cell, rule) -> int:
         """
         Interaction with a single cell in the automaton state
         :param cell: index of cell in state
@@ -151,16 +146,23 @@ if __name__ == "__main__":
             # capture previous state
             new_state = ca.state.copy()
             for cell in range(GRID_SIZE):
-                new_state[cell] = ca.interaction(cell, rule)
+                new_state[cell] = ca.rule_of_interaction(cell, rule)
             ca.state = new_state
             state_history.append(ca.state)
-            state_transitions.append(StateTransition(epoch, rule, "".join(str(i) for i in ca.state)))
+            state_transitions.append(
+                StateTransition(
+                    epoch,
+                    rule,
+                    NEIGHBORHOOD_SITES,
+                    ca.config.neighbohood_bias.value,
+                    ca.config.boundary_config.value,
+                    "".join(str(i) for i in ca.state)))
         print(state_history)
         for state_transition in state_transitions:
             session.add(state_transition)
         session.commit()
         # If wanting to save JPEGS
-        # plt.imsave('img/{}.png'.format(rule), state_history)
+        plt.imsave('img/{}.png'.format(rule), state_history)
     session.close()
 
 
