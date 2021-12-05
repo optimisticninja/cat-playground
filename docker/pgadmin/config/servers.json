@@ -1,0 +1,14 @@
+{
+	"Servers": {
+		"1": {
+			"Name": "localhost",
+			"Group": "Servers",
+			"Host": "ed7f118b610b60bcb44c6ccda616c959_auth-api__pgadmin_1",
+			"Port": "5432",
+			"MaintenanceDB": "postgres",
+			"Username": "optimisticninja",
+			"SSLMode": "prefer",
+			"PassFile": "/pgpassfile"
+		}
+	}
+}
