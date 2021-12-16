@@ -1,7 +1,6 @@
-from gatewaykey import GatewayKey, NeighborhoodBias, BoundaryConfig, RuleOfInteraction
 import matplotlib.pyplot as plt
 
-# TODO: Run tests on standard CAs to see if there are any reversible rules
+from gatewaykey import GatewayKey, NeighborhoodBias, BoundaryConfig, RuleOfInteraction
 
 
 class BlockCA1D:
@@ -13,23 +12,23 @@ class BlockCA1D:
     def get_block(self, cell: int) -> ():
         """
         Get block starting at @cell offset (cyclic and zero boundary currently supported)
-        :param cell:
-        :return: block as tuple
+        :param cell: target cell
+        :return: block as tuple, cells added to block if boundary reached
         """
         block = self.state[cell: cell + self.config.neighbor_sites]
-
+        to_add = self.config.neighbor_sites - len(block)
         # Handle boundary
         if len(block) < self.config.neighbor_sites:
             if self.config.boundary_config == BoundaryConfig.CYCLIC:
                 # Wrap state and append missing block(s) from beginning
-                block += self.state[: self.config.neighbor_sites - len(block)]
+                block += self.state[: to_add]
             elif self.config.boundary_config == BoundaryConfig.ZERO:
-                block += [0] * (self.config.neighbor_sites - len(block))
+                block += [0] * to_add
             else:
                 raise NotImplementedError
-        return tuple(block)
+        return tuple(block), to_add
 
-    # TODO: Devise more rules beyond rule bit with previous cell state in block
+    # TODO: Devise rules beyond existing or hill climb to try and find more complex patterns
     def block_transition(self, block, rule) -> []:
         """
         A function that takes as input an assignment of states
@@ -45,7 +44,7 @@ class BlockCA1D:
             new_block = []
             neighborhood_states_idx = self.config.neighborhood_states.index(block)
             for i in range(len(block)):
-                new_cell_state = ((rule >> neighborhood_states_idx) ^ block[i-1]) & 1
+                new_cell_state = ((rule >> neighborhood_states_idx) ^ block[i - 1]) & 1
                 new_block.append(new_cell_state)
             return new_block
         else:
@@ -68,14 +67,16 @@ class BlockCA1D:
                 new_state = self.state.copy()
                 # iterate over state by block-length
                 for block_start in range(0, len(self.state), self.config.neighbor_sites):
-                    # FIXME: State size changes as more blocks are needed from edges
-                    #           truncate evolved neighborhoods on uneven state size modulo neighborhood size
-                    block = self.get_block(block_start)
+                    block, added = self.get_block(block_start)
                     block_transition = self.block_transition(block, rule)
                     if block_start == 0:
                         new_state = list(block_transition) + new_state[block_start + self.config.neighbor_sites:]
                     else:
-                        new_state = new_state[:block_start] + list(block_transition) + new_state[block_start + self.config.neighbor_sites:]
+                        new_state = new_state[:block_start] + list(block_transition) + new_state[
+                                                                                       block_start + self.config.neighbor_sites:]
+                    # Slice off boundary cells to return to proper state size
+                    if added:
+                        new_state = new_state[:-added]
                 # overwrite state with update
                 self.state = new_state
                 state_history.append(self.state)
@@ -83,6 +84,7 @@ class BlockCA1D:
             plt.imsave('img/{}.png'.format(rule), state_history)
 
 
+# TODO: Run tests on standard CAs to see if there are any reversible rules
 class CA1D:
     def __init__(self, config: GatewayKey):
         # Capture initial state into working state

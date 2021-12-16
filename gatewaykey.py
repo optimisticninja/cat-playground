@@ -23,7 +23,7 @@ class RuleOfInteraction(Enum):
 
 
 class NeighborhoodBias(Enum):
-    """ Which side to pull extra cell from on uneven numbers"""
+    """ Which side to pull extra cell from on even-length numbers"""
     LHS = 0
     RHS = 1
 
@@ -59,6 +59,3 @@ class GatewayKey():
             seq for seq in itertools.product([0, 1],
                                              repeat=self.neighbor_sites)]
         self.total_neighborhood_states = len(self.neighborhood_states)
-        # Create randomized "substitution cipher" for neighborhood states on block automata
-        self.permutation_states = self.neighborhood_states
-        random.shuffle(self.permutation_states)

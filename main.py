@@ -41,7 +41,7 @@ def standard_1d_3ns():
 
 
 def block_1d_3ns():
-    state_size = 33
+    state_size = 34
 
     initial_state = [1] * state_size
     initial_state[state_size // 2] = 0
@@ -58,7 +58,7 @@ def block_1d_3ns():
 
 
 if __name__ == "__main__":
-    standard_1d_3ns()
+    # standard_1d_3ns()
     block_1d_3ns()
 
 

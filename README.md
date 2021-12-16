@@ -57,6 +57,16 @@ Each new cell is the mapping of a unique neighborhood state in all possible neig
 ```
 
 
+## Terminology
+
+| term | definition                                                                                                                       |
+| --- |----------------------------------------------------------------------------------------------------------------------------------|
+| bias | when dealing with even number neighborhoods, this is the side to pull the extra cell from (right or left)                        |
+| neighbor sites | the block and neighborhood size                                                                                                  |
+| neighborhood | the "radius" around the target cell. radii can be uneven                                                                         |
+| block | a non-overlapping partition of the CA state to operate on. instead of updating at the cellular level, the whole block is updated |
+| gateway key | the encoding/configuration of the cellular automata (initial state, neighborhood sites, total cells, boundary rule, etc.) |                                                                           
+
 ## References
 
 [Cellular Automata Transforms: Theory and Applications in Multimedia Compression, Encryption, and Modeling](https://www.amazon.com/Cellular-Automata-Transforms-Applications-Compression/dp/0792378571)
