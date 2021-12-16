@@ -5,8 +5,10 @@ from ca1d import CA1D, BlockCA1D, GatewayKey, BoundaryConfig, RuleOfInteraction
 #       - orphan pattern
 #
 # TODO: Parallelize computations
+# TODO: Higher dimensionality
 # TODO: Classify CA type (seeking highly random yet reversible) (oscillator, etc)
 # TODO: Hill climb to target maximum chaos yet reversible, see below todos
+
 # TODO: Fitness function (Rules)
 #       - levenshtein_damereau of target cell with new state
 #       - least timesteps until reached

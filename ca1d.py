@@ -2,7 +2,45 @@ import matplotlib.pyplot as plt
 
 from gatewaykey import GatewayKey, NeighborhoodBias, BoundaryConfig, RuleOfInteraction
 
+# Research:
+#   - Find more literature on second-order CAs
+#   - Look if book has specific information on second-order CAs, otherwise find papers (margolus, etc)
 
+# TODO:
+#   - How is input state coming in since it depends on two timesteps? (should make hard decision on one or the other, not both)
+#       - Only two epochs or handle time with a boundary rule?
+#   - Create inverse rule generator
+#       - Add (basis? check book) type to config and map
+#       - Do we have to run forward for search or can the inverse be calculated?
+class SecondOrderCA1D:
+    def __init__(self, config: GatewayKey):
+        # Capture initial state into working state
+        self.state = config.initial_state
+        self.config = config
+
+    def get_states(self, cell: int) -> []:
+        """
+        Return t-1 neighborhood sites and state at t-2
+        :param cell: target cell
+        :return:
+        """
+        # TODO: Flatten structure of t-1/t-2 so existing state_permutations will work.
+        # TODO: t-1[neighborhood] t-2
+        # TODO: Any special rules for boundaries in second-order automata?
+        raise NotImplementedError
+
+    def state_transition(self, cell: int, rule: int):
+        """
+        Interaction with a single cell in the automaton state
+        :param cell: target cell
+        :param rule: rule number
+        :return:
+        """
+        timesteps = self.get_states(cell)
+        raise NotImplementedError
+
+
+# TODO: Write test suite for attributes of block CAs
 class BlockCA1D:
     def __init__(self, config: GatewayKey):
         # Capture initial state into working state
@@ -16,24 +54,24 @@ class BlockCA1D:
         :return: block as tuple, cells added to block if boundary reached
         """
         block = self.state[cell: cell + self.config.neighbor_sites]
-        to_add = self.config.neighbor_sites - len(block)
+        cells_added = self.config.neighbor_sites - len(block)
         # Handle boundary
         if len(block) < self.config.neighbor_sites:
             if self.config.boundary_config == BoundaryConfig.CYCLIC:
                 # Wrap state and append missing block(s) from beginning
-                block += self.state[: to_add]
+                block += self.state[: cells_added]
             elif self.config.boundary_config == BoundaryConfig.ZERO:
-                block += [0] * to_add
+                block += [0] * cells_added
             else:
                 raise NotImplementedError
-        return tuple(block), to_add
+        return tuple(block), cells_added
 
     # TODO: Devise rules beyond existing or hill climb to try and find more complex patterns
     def block_transition(self, block, rule) -> []:
         """
         A function that takes as input an assignment of states
-              for the cells in a single tile and produces as output another assignment
-              of states for the same cells.
+        for the cells in a single tile and produces as output another assignment
+        of states for the same cells.
         :param block:
         :param rule:
         :return:
@@ -44,6 +82,7 @@ class BlockCA1D:
             new_block = []
             neighborhood_states_idx = self.config.neighborhood_states.index(block)
             for i in range(len(block)):
+                # TODO: Should cyclic/zero boundary be applied to block?
                 new_cell_state = ((rule >> neighborhood_states_idx) ^ block[i - 1]) & 1
                 new_block.append(new_cell_state)
             return new_block

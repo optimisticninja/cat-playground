@@ -14,12 +14,8 @@ class RuleOfInteraction(Enum):
     # Map the bit of rule at index found in all possible neighborhood states
     #  i.e. rule_bits[index of neighborhood in config.neighborhood_states]
     NEIGHBORHOOD_TO_RULE_BIT = "neighborhood_to_rule_bit"
+    # Same rule as above but XOR'd with previous cell's state
     NEIGHBORHOOD_TO_RULE_BIT_PREVIOUS_CELL_XOR = "neighborhood_to_rule_bit_previous_cell_xor"
-
-
-# TODO: Geometric structure (when higher dimensionality supported)
-# TODO: Transform type
-# TODO: Basis type
 
 
 class NeighborhoodBias(Enum):
@@ -27,10 +23,15 @@ class NeighborhoodBias(Enum):
     LHS = 0
     RHS = 1
 
+# TODO: Geometric structure (when higher dimensionality supported)
+# TODO: Transform type (re-read gateway key section of book and see if this is different from rule of interaction)
+# TODO: Basis type (again, re-read about basis functions - they are the reversible rule methinks)
+
 
 # TODO: Accommodate higher dimensionality and build out entire gate key from paper
-# TODO: Create serializable version (decodable string)
-class GatewayKey():
+# TODO: Create decodable __repr__
+# TODO: Examine notes/book to build out full key
+class GatewayKey:
     """ Configuration/Encoding of CA. """
 
     def __init__(self,
